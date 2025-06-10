@@ -1,0 +1,5 @@
+package ie.qqrxi.pare
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity() 
