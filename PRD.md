@@ -1,10 +1,10 @@
 # Product Requirements Document (PRD)
-# Pare Mobile Application
+# Pare - Minimalist Daily Task Management
 
-**Version:** 1.0  
+**Version:** 2.0  
 **Date:** 2025-10-06  
 **Author:** Development Team  
-**Status:** Draft  
+**Status:** Updated - Focused Vision  
 
 ---
 
@@ -27,99 +27,117 @@
 
 ## Executive Summary
 
-Pare is a modern Android mobile application built with Flutter, designed to provide users with a seamless and intuitive experience. The app will feature a dark-themed interface, robust version control integration, and in-app update notifications to keep users informed of the latest features and improvements.
+**Pare** is a minimalist daily task management app that solves the core problem of daily overwhelm through radical simplicity. Unlike cluttered productivity apps, Pare focuses on **today's tasks only** - helping users maintain clarity and momentum without the complexity of projects, tags, or endless categorization.
+
+**Core Philosophy:** "Less is more productive."
 
 ### Key Objectives
-- Deliver a high-quality mobile experience with modern UI/UX
-- Implement comprehensive version control and update tracking
-- Provide users with transparency about app updates and changes
-- Establish a foundation for scalable feature development
+- **Eliminate Daily Overwhelm**: Focus on today's essential tasks only
+- **Speed Over Features**: Lightning-fast task entry and completion
+- **Visual Clarity**: Time-prominent, distraction-free interface
+- **Habit Formation**: Encourage consistent daily task completion
+
+### The Problem We Solve
+Most productivity apps suffer from **feature bloat** - projects, tags, due dates, priorities, categories. Users spend more time organizing than doing. Pare removes the friction: **What needs to happen today?**
 
 ---
 
 ## Product Overview
 
 ### Vision Statement
-To create a user-centric mobile application that demonstrates modern Flutter development practices while providing users with a transparent and engaging update experience.
+"The fastest way to capture and complete your daily tasks, without the clutter."
 
 ### Mission
-Pare will serve as a showcase of contemporary mobile app development, featuring clean architecture, modern design principles, and user-friendly version management.
+Pare eliminates productivity app overwhelm by focusing exclusively on daily task completion. We believe that most people don't need complex project management - they need a simple way to remember and complete today's essentials.
 
 ### Core Values
-- **Transparency**: Users always know what's new and what's changed
-- **Quality**: Robust testing and clean code architecture
-- **Modern Design**: Contemporary UI/UX following Material 3 guidelines
-- **User-Centric**: Features designed around user needs and feedback
+- **Simplicity First**: Every feature must justify its existence
+- **Speed**: Task entry and completion in under 3 seconds
+- **Daily Focus**: No past regrets, no distant futures - just today
+- **Visual Calm**: Interface promotes focus, not anxiety
 
 ---
 
 ## User Personas
 
-### Primary Persona: Tech-Savvy Mobile User
-- **Age:** 25-45
-- **Characteristics:** Appreciates clean design, values transparency in app updates
-- **Goals:** Wants to understand what's new in app updates, prefers dark themes
-- **Pain Points:** Unclear changelogs, intrusive update notifications
+### Primary Persona: The Overwhelmed Professional
+- **Name:** Sarah, 32, Marketing Manager
+- **Daily Reality:** Juggles meetings, deadlines, personal errands
+- **Current Pain:** Uses 3 different todo apps, spends 10 minutes daily "organizing tasks"
+- **Goals:** Quick task capture during busy days, clear daily completion
+- **Quote:** *"I just need to remember what I have to do today, not manage a project"*
 
-### Secondary Persona: Casual Mobile User
-- **Age:** 18-65
-- **Characteristics:** Uses mobile apps daily, prefers simple interfaces
-- **Goals:** Easy-to-use applications with clear navigation
-- **Pain Points:** Complex interfaces, overwhelming information
+### Secondary Persona: The Mindful Minimalist
+- **Name:** David, 28, Designer
+- **Daily Reality:** Values intentional living, avoids digital clutter
+- **Current Pain:** Existing apps feel bloated and anxiety-inducing
+- **Goals:** Simple daily focus without feature overwhelm
+- **Quote:** *"Most todo apps stress me out with all their options"*
+
+### Tertiary Persona: The Busy Parent
+- **Name:** Maria, 35, Working Mom
+- **Daily Reality:** Manages family schedules while working full-time
+- **Current Pain:** Forgets simple tasks amid chaos, needs quick capture
+- **Goals:** Remember errands and tasks without complexity
+- **Quote:** *"I need something I can use in 30 seconds while kids are screaming"*
 
 ---
 
 ## Functional Requirements
 
-### Core Features
+### Core Features (Based on Mockup Analysis)
 
-#### 1. Home Dashboard
-- **Description:** Central hub displaying app overview and key information
+#### 1. Time-Prominent Daily View
+- **Description:** Current time and date prominently displayed (matches "9:41" and "MONDAY April 14 2025" in mockup)
 - **Priority:** High
 - **User Stories:**
-  - As a user, I want to see a welcome screen when I open the app
-  - As a user, I want to access main features from the home screen
-  - As a user, I want to see if there are any updates available
+  - As a user, I want to see the current time prominently when I open the app
+  - As a user, I want to see today's day and date clearly
+  - As a user, I want the interface to reinforce "present moment" focus
 
-#### 2. Profile Management
-- **Description:** User profile section with personal information display
-- **Priority:** Medium
-- **User Stories:**
-  - As a user, I want to view my profile information
-  - As a user, I want to see app-related preferences
-  - As a user, I want to access settings from my profile
-
-#### 3. Version Control Integration
-- **Description:** In-app system to display version information and changelog
+#### 2. Lightning-Fast Task Entry
+- **Description:** Single-tap task creation with "Add a new task..." placeholder
 - **Priority:** High
 - **User Stories:**
-  - As a user, I want to see the current app version
-  - As a user, I want to view what's new in recent updates
-  - As a user, I want to be notified when updates are available
-  - As a user, I want to see a detailed changelog of recent versions
+  - As a user, I want to add a task in under 3 seconds
+  - As a user, I want a clear, visible entry point for new tasks
+  - As a user, I want minimal friction between thought and capture
+  - As a user, I want optional task details (like "Read 10 pages")
 
-#### 4. Update Notification System
-- **Description:** Smart notification system for app updates
+#### 3. Visual Task Completion
+- **Description:** Checkbox-based completion with clear visual feedback
 - **Priority:** High
 - **User Stories:**
-  - As a user, I want to be notified when a new version is available
-  - As a user, I want to see a summary of new features
-  - As a user, I want to choose when to view update details
-  - As a user, I want to dismiss update notifications
+  - As a user, I want to check off completed tasks (like "5km run" shown checked)
+  - As a user, I want immediate visual satisfaction from completion
+  - As a user, I want to see my progress throughout the day
+  - As a user, I want completed tasks to remain visible but visually distinct
 
-#### 5. Navigation System
-- **Description:** Intuitive navigation between app sections
+#### 4. Weekday Navigation
+- **Description:** Swipeable Monday-Friday navigation (as shown in mockup)
 - **Priority:** High
 - **User Stories:**
-  - As a user, I want to easily navigate between different sections
-  - As a user, I want clear visual indicators of my current location
-  - As a user, I want consistent navigation patterns
+  - As a user, I want to view tasks for different weekdays
+  - As a user, I want to swipe between days intuitively
+  - As a user, I want to see the current day highlighted
+  - As a user, I want weekend exclusion (work-week focus)
 
-### Future Features (Phase 2+)
-- Settings and preferences management
-- Data synchronization capabilities
-- Advanced user customization options
-- Social features and sharing capabilities
+#### 5. Task Persistence & State
+- **Description:** Tasks remain between app sessions, completion state preserved
+- **Priority:** High
+- **User Stories:**
+  - As a user, I want my tasks to persist when I close the app
+  - As a user, I want task completion status to be remembered
+  - As a user, I want tasks to be date-specific
+
+### Intentionally Excluded Features (Minimalist Philosophy)
+- ❌ Projects or categories
+- ❌ Due dates (beyond "today")
+- ❌ Priority levels or tags
+- ❌ Sub-tasks or complex hierarchies
+- ❌ Time tracking or analytics
+- ❌ Collaboration or sharing
+- ❌ Reminders or notifications (the app IS the reminder)
 
 ---
 
@@ -173,48 +191,134 @@ Pare will serve as a showcase of contemporary mobile app development, featuring 
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.1.2
-  go_router: ^14.1.4
-  dio: ^5.4.3+1
-  shared_preferences: ^2.2.2
-  package_info_plus: ^4.2.0  # For version info
-  url_launcher: ^6.2.1       # For external links
-  flutter_secure_storage: ^9.0.0  # For secure data
+  provider: ^6.1.2              # State management
+  hive_flutter: ^1.1.0         # Fast local storage for tasks
+  intl: ^0.19.0                # Date/time formatting
+  package_info_plus: ^4.2.0    # Version info for updates
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  hive_generator: ^2.0.1       # Code generation for Hive
+  build_runner: ^2.4.9         # Required for hive_generator
+```
+
+### Data Models
+```dart
+// Core task model
+@HiveType(typeId: 0)
+class Task extends HiveObject {
+  @HiveField(0)
+  String id;
+  
+  @HiveField(1)
+  String title;
+  
+  @HiveField(2)
+  bool isCompleted;
+  
+  @HiveField(3)
+  DateTime date;
+  
+  @HiveField(4)
+  DateTime createdAt;
+}
+
+// Weekday enum for navigation
+enum Weekday { monday, tuesday, wednesday, thursday, friday }
 ```
 
 ---
 
 ## User Interface Design
 
-### Design Principles
-- **Dark Theme First:** Primary interface uses dark color scheme
-- **Material 3:** Modern Google design language
-- **Minimalist:** Clean, uncluttered interface
-- **Consistent:** Uniform design patterns throughout
+### Design Principles (Dark Theme Focus)
+- **Time Prominence:** Clock display is the visual anchor with warm accent color
+- **Dark Elegance:** Rich blacks with carefully chosen accent colors
+- **Depth Through Layering:** Subtle elevation using different surface colors
+- **High Contrast:** Excellent readability with WCAG AA+ compliance
+- **Completion Satisfaction:** Vibrant green feedback for task completion
+- **Gesture-Friendly:** Designed for one-handed use and quick interactions
 
-### Color Palette (Dark Theme)
-- **Primary:** #BB86FC (Purple 200)
-- **Primary Variant:** #6200EE (Purple 700)
-- **Secondary:** #03DAC6 (Teal 200)
-- **Background:** #121212 (Dark Grey)
-- **Surface:** #1E1E1E (Dark Grey)
-- **Error:** #CF6679 (Red 200)
-- **On Primary:** #000000 (Black)
-- **On Secondary:** #000000 (Black)
-- **On Background:** #FFFFFF (White)
-- **On Surface:** #FFFFFF (White)
+### Visual Hierarchy (From Mockup)
+1. **Time Display** (9:41) - Largest, most prominent
+2. **Day/Date** (MONDAY April 14 2025) - Secondary header
+3. **Task List** - Clean, scannable list with checkboxes
+4. **Add Task Prompt** - Subtle, non-intrusive placeholder
+5. **Day Navigation** - Vertical sidebar for context
 
-### Typography
-- **Headlines:** Roboto Bold
-- **Body Text:** Roboto Regular
-- **Captions:** Roboto Light
-- **Buttons:** Roboto Medium
+### Color Palette (Beautiful Dark Theme)
+Inspired by modern dark UI design with excellent contrast and visual hierarchy:
+- **Background:** #0A0A0B (Rich Black - deepest background)
+- **Surface:** #1C1C1E (Dark Grey - card backgrounds)
+- **Surface Variant:** #2C2C2E (Medium Grey - elevated elements)
+- **Text Primary:** #FFFFFF (Pure White - main text)
+- **Text Secondary:** #8E8E93 (Cool Grey - secondary text)
+- **Text Tertiary:** #636366 (Muted Grey - placeholders)
+- **Accent Primary:** #007AFF (iOS Blue - interactive elements)
+- **Accent Secondary:** #34C759 (Green - completed tasks)
+- **Accent Tertiary:** #FF9F0A (Orange - time/date highlights)
+- **Border:** #38383A (Subtle borders and dividers)
+- **Focus/Active:** #1C1C1E (Interactive state backgrounds)
 
-### Component Library
-- Cards with rounded corners (16dp radius)
-- Elevated buttons with consistent padding
-- Material 3 navigation patterns
-- Consistent spacing grid (8dp base)
+### Typography Hierarchy
+- **Time Display:** 48px, Bold (SF Pro/Roboto)
+- **Day/Date:** 24px, Medium
+- **Task Text:** 16px, Regular
+- **Placeholder:** 16px, Light
+- **Day Navigation:** 14px, Medium
+
+### Interaction Design
+- **Task Entry:** Single tap on "Add a new task..." opens inline editing
+- **Task Completion:** Tap checkbox for instant visual feedback
+- **Day Navigation:** Swipe gestures between weekdays
+- **Task Editing:** Long press for edit/delete options
+
+### Layout Specifications
+- **Screen Padding:** 24px horizontal, 16px vertical
+- **Task Item Height:** 44px (touch-friendly)
+- **Checkbox Size:** 20px with 2px border
+- **Spacing Between Tasks:** 8px
+- **Day Navigation Width:** 80px fixed sidebar
+
+---
+
+## Competitive Analysis & Differentiation
+
+### How Pare Differs from Existing Solutions
+
+#### vs. Google Tasks
+- **Google Tasks:** Project-oriented, integration-heavy, multiple lists
+- **Pare:** Single daily view, no projects, no integrations needed
+- **Advantage:** Zero cognitive overhead - just today's tasks
+
+#### vs. Todoist
+- **Todoist:** Complex project hierarchies, karma points, premium features
+- **Pare:** No projects, no gamification, completely free core experience
+- **Advantage:** No feature anxiety - the app doesn't judge your productivity
+
+#### vs. Any.do
+- **Any.do:** Calendar integration, location reminders, team collaboration
+- **Pare:** No calendar chaos, no location complexity, purely personal
+- **Advantage:** Works offline, no account required, instant startup
+
+#### vs. Apple Reminders
+- **Apple Reminders:** Lists, locations, Siri integration, time-based alerts
+- **Pare:** Single view, no notifications (the app IS the reminder)
+- **Advantage:** Platform agnostic, focused on completion not alerts
+
+### Unique Value Propositions
+
+1. **Time-First Design:** Unlike other apps that hide time or make it secondary, Pare makes current time the visual anchor
+2. **Weekday-Only Focus:** Excludes weekends by design - this is about work-week momentum
+3. **No Notification Anxiety:** The app doesn't ping you - you come to it when ready
+4. **One-Screen Everything:** Never navigate away from your task list
+5. **Completion Celebration:** Visual feedback designed for satisfaction, not guilt
+
+### Target User Differentiation
+- **Not for:** Project managers, GTD enthusiasts, productivity optimizers
+- **Perfect for:** People who just want to remember and complete daily essentials
 
 ---
 
@@ -256,32 +360,47 @@ class UpdateNotificationService {
 
 ## Development Phases
 
-### Phase 1: Foundation (Current)
-- ✅ Basic app structure
-- ✅ Navigation system
-- ✅ Dark theme implementation
-- ✅ Version control setup
-- ✅ GitHub integration
+### Phase 1: Core Task Management (Next 2 Weeks)
+- [ ] **Time Display Component:** Prominent clock showing current time
+- [ ] **Date Display:** Current day and date formatting
+- [ ] **Task Data Model:** Hive integration for local storage
+- [ ] **Basic Task List:** Display tasks for current day
+- [ ] **Task Entry:** "Add a new task..." inline editing
+- [ ] **Task Completion:** Checkbox interaction with visual feedback
 
-### Phase 2: Version Control Integration (Next)
-- [ ] Package info integration
-- [ ] Changelog display system
-- [ ] Update notification service
-- [ ] What's new screen
-- [ ] Version comparison features
+### Phase 2: Daily Navigation (Week 3-4)
+- [ ] **Weekday Navigation:** Monday-Friday sidebar
+- [ ] **Day Switching:** Swipe gestures between days
+- [ ] **Date-Specific Tasks:** Tasks associated with specific weekdays
+- [ ] **Current Day Highlighting:** Visual indication of today
+- [ ] **Task Persistence:** Data saved across app sessions
 
-### Phase 3: Enhanced Features
-- [ ] User preferences system
-- [ ] Advanced settings
-- [ ] Data persistence improvements
-- [ ] Performance optimizations
+### Phase 3: Polish & Refinement (Week 5-6)
+- [ ] **Animations:** Smooth task completion animations
+- [ ] **Gesture Improvements:** Enhanced swipe and tap interactions
+- [ ] **Edge Cases:** Empty states, very long task titles
+- [ ] **Performance:** Optimize for instant app startup
+- [ ] **Accessibility:** Screen reader and accessibility support
 
-### Phase 4: Polish & Launch Prep
-- [ ] Comprehensive testing
-- [ ] Performance profiling
-- [ ] Security audit
-- [ ] Documentation completion
-- [ ] Release candidate builds
+### Phase 4: Version Control Integration (Week 7-8)
+- [ ] **In-App Version Display:** Subtle version info
+- [ ] **What's New Screen:** Show updates between versions
+- [ ] **Changelog Integration:** Connect to GitHub releases
+- [ ] **Update Notifications:** Non-intrusive update alerts
+
+### Phase 5: Launch Preparation (Week 9-10)
+- [ ] **Comprehensive Testing:** All user flows and edge cases
+- [ ] **Performance Profiling:** Ensure <3 second startup
+- [ ] **App Store Assets:** Screenshots, descriptions, metadata
+- [ ] **Documentation:** User guide and developer docs
+- [ ] **Release Candidate:** Final testing and bug fixes
+
+### Success Criteria for Each Phase
+- **Phase 1:** Can add, complete, and view tasks for today
+- **Phase 2:** Can navigate between weekdays and manage daily tasks
+- **Phase 3:** App feels polished and responds instantly
+- **Phase 4:** Users see value in version tracking
+- **Phase 5:** Ready for public release
 
 ---
 
@@ -392,8 +511,35 @@ class UpdateNotificationService {
 
 ---
 
+## Technical Implementation Summary
+
+### Beautiful Dark Theme Implementation
+- **Framework:** Flutter 3.29.3+ with Material 3 design system
+- **Color System:** Modern dark palette with high contrast ratios (WCAG AA+ compliant)
+- **Typography:** Custom TextTheme with prominent time display and clear hierarchy
+- **Material 3:** Uses latest ColorScheme properties (surface, surfaceContainer, etc.)
+- **Accessibility:** High contrast ratios, semantic labeling, screen reader support
+- **Performance:** 60fps animations with optimized widget rebuilds
+- **Platform:** Android-first with modern design language
+
+### Color Accessibility
+- **Background to Text:** 15.8:1 contrast ratio (exceeds WCAG AAA)
+- **Secondary Text:** 7.2:1 contrast ratio (exceeds WCAG AA)
+- **Interactive Elements:** 4.5:1 minimum contrast ratio (meets WCAG AA)
+- **Focus Indicators:** Clear visual feedback for all interactive elements
+
+### Key Color Palette
+- **Rich Black Background:** #0A0A0B (professional depth)
+- **Surface Colors:** #1C1C1E, #2C2C2E (layered elevation)
+- **iOS Blue Primary:** #007AFF (familiar, accessible)
+- **Completion Green:** #34C759 (satisfying feedback)
+- **Time Highlight:** #FF9F0A (warm, attention-grabbing)
+
+---
+
 **Document History:**
 - v1.0 (2025-10-06): Initial PRD creation
-- Future versions will track changes and updates
+- v2.0 (2025-10-06): Major pivot to minimalist task management focus
+- v2.1 (2025-10-06): Beautiful dark theme implementation and specifications
 
 **Next Review Date:** 2025-10-20 
