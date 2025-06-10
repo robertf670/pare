@@ -17,9 +17,19 @@ class PareApp extends StatelessWidget {
         title: 'Pare',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF6750A4),
-            brightness: Brightness.light,
+          colorScheme: const ColorScheme.dark(
+            primary: Color(0xFFBB86FC),           // Purple 200
+            primaryContainer: Color(0xFF6200EE),   // Purple 700
+            secondary: Color(0xFF03DAC6),          // Teal 200
+            background: Color(0xFF121212),         // Dark Grey
+            surface: Color(0xFF1E1E1E),           // Dark Grey
+            error: Color(0xFFCF6679),             // Red 200
+            onPrimary: Color(0xFF000000),         // Black
+            onSecondary: Color(0xFF000000),       // Black
+            onBackground: Color(0xFFFFFFFF),      // White
+            onSurface: Color(0xFFFFFFFF),         // White
+            onError: Color(0xFF000000),           // Black
+            brightness: Brightness.dark,
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
@@ -36,13 +46,25 @@ class PareApp extends StatelessWidget {
             ),
           ),
         ),
+        // Keep light theme for system preference support
         darkTheme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF6750A4),
+          colorScheme: const ColorScheme.dark(
+            primary: Color(0xFFBB86FC),
+            primaryContainer: Color(0xFF6200EE),
+            secondary: Color(0xFF03DAC6),
+            background: Color(0xFF121212),
+            surface: Color(0xFF1E1E1E),
+            error: Color(0xFFCF6679),
+            onPrimary: Color(0xFF000000),
+            onSecondary: Color(0xFF000000),
+            onBackground: Color(0xFFFFFFFF),
+            onSurface: Color(0xFFFFFFFF),
+            onError: Color(0xFF000000),
             brightness: Brightness.dark,
           ),
         ),
+        themeMode: ThemeMode.dark, // Force dark theme as primary
         routerConfig: _router,
       ),
     );

@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Comprehensive Product Requirements Document (PRD.md)
+- Dark theme color scheme implementation based on PRD specifications
+- In-app version control system planning and architecture
+- User personas and functional requirements documentation
+
 ### Changed
+- Updated app theme to use dark color palette as primary theme
+- Forced dark theme mode for consistent user experience
 - Preparing for GitHub CI/CD integration
 
 ## [1.0.0+1] - 2025-10-06
