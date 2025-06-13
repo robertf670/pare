@@ -47,19 +47,29 @@ class TaskItem extends StatelessWidget {
           direction: DismissDirection.endToStart,
           background: Container(
             alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 20),
+            padding: const EdgeInsets.only(right: 24),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF3B30),
-              borderRadius: BorderRadius.circular(AppTheme.radiusS),
+              gradient: const LinearGradient(
+                colors: [Color(0x00FF3B30), Color(0xFFFF3B30)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
             ),
-            child: const Icon(
-              Icons.delete_outline,
-              color: Colors.white,
-              size: 24,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFFFF),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.delete_outline,
+                color: Color(0xFFFF3B30),
+                size: 20,
+              ),
             ),
           ),
           onDismissed: (direction) {
-            // Store the task for potential undo
             taskProvider.deleteTask(task.id);
             onDeleted?.call();
             _showUndoSnackBar(context, taskProvider);
@@ -67,64 +77,122 @@ class TaskItem extends StatelessWidget {
           child: InkWell(
             onTap: () => taskProvider.toggleTaskCompletion(task.id),
             onLongPress: onLongPress,
-            borderRadius: BorderRadius.circular(AppTheme.radiusS),
-          child: Container(
-            height: AppTheme.taskItemHeight, // 44px touch-friendly from PRD
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.paddingS, // 8px horizontal padding
-              vertical: 10, // Center content vertically
-            ),
-            child: Row(
-              children: [
-                // Checkbox (20px with 2px border from PRD specs)
-                GestureDetector(
-                  onTap: () => taskProvider.toggleTaskCompletion(task.id),
-                  child: Container(
-                    width: AppTheme.checkboxSize, // 20px
-                    height: AppTheme.checkboxSize, // 20px
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
+            borderRadius: BorderRadius.circular(AppTheme.radiusM),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                children: [
+                  // Modern checkbox with sophisticated animation
+                  GestureDetector(
+                    onTap: () => taskProvider.toggleTaskCompletion(task.id),
+                    child: AnimatedContainer(
+                      duration: AppTheme.animationFast,
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
                         color: task.isCompleted
-                          ? Theme.of(context).colorScheme.secondary // Green
-                          : Theme.of(context).colorScheme.outline, // Subtle border
-                        width: 2, // 2px border from PRD
+                          ? const Color(0xFF10B981)
+                          : Colors.transparent,
+                        border: Border.all(
+                          color: task.isCompleted
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFD1D5DB),
+                          width: 2,
+                        ),
+                        boxShadow: task.isCompleted ? [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ] : null,
                       ),
-                      color: task.isCompleted
-                        ? Theme.of(context).colorScheme.secondary // Green fill
-                        : Colors.transparent,
-                    ),
-                    child: task.isCompleted
-                      ? Icon(
-                          Icons.check,
-                          size: 12, // Smaller check for 20px container
-                          color: Theme.of(context).colorScheme.onSecondary, // Black on green
-                        )
-                      : null,
-                  ),
-                ),
-                const SizedBox(width: 12), // Spacing between checkbox and text
-                
-                // Task title (16px regular from PRD)
-                Expanded(
-                  child: Text(
-                    task.title,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      decoration: task.isCompleted 
-                        ? TextDecoration.lineThrough 
+                      child: task.isCompleted
+                        ? const Icon(
+                            Icons.check,
+                            size: 16,
+                            color: Color(0xFFFFFFFF),
+                          )
                         : null,
-                      color: task.isCompleted
-                        ? Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6) // Dimmed
-                        : Theme.of(context).colorScheme.onSurface, // Pure white
-                      decorationColor: Theme.of(context).colorScheme.onSurfaceVariant, // Cool grey strikethrough
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  
+                  const SizedBox(width: 16),
+                  
+                  // Enhanced task content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Task title with modern typography
+                        AnimatedDefaultTextStyle(
+                          duration: AppTheme.animationFast,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: task.isCompleted
+                              ? const Color(0xFF9CA3AF)
+                              : const Color(0xFF1F2937),
+                            decoration: task.isCompleted 
+                              ? TextDecoration.lineThrough 
+                              : null,
+                            decorationColor: const Color(0xFF9CA3AF),
+                            height: 1.3,
+                            letterSpacing: 0.1,
+                          ),
+                          child: Text(
+                            task.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        
+                        // Subtle completion indicator
+                        if (task.isCompleted) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Completed',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF10B981),
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  
+                  // Modern status indicator
+                  if (!task.isCompleted) ...[
+                    const SizedBox(width: 12),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6B7280),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
           ),
         );
       },

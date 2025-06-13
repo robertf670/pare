@@ -2,18 +2,59 @@ import 'package:flutter/foundation.dart';
 import '../models/task.dart';
 import '../models/weekday.dart';
 import '../services/task_service.dart';
+import '../utils/date_utils.dart';
 
 
 class TaskProvider extends ChangeNotifier {
   List<Task> _tasks = [];
   Weekday _selectedWeekday = Weekday.today;
+  int _weekOffset = 0; // 0 = current week, -1 = previous week, +1 = next week
   bool _isLoading = false;
   final List<Task> _deletedTasks = []; // Store recently deleted tasks for undo
 
-  List<Task> get tasks => _tasks.where((task) => _isTaskForSelectedWeekday(task)).toList();
+  List<Task> get tasks {
+    final filteredTasks = _tasks.where((task) => _isTaskForSelectedWeekday(task)).toList();
+    
+    // Sort tasks: incomplete tasks first, then completed tasks
+    filteredTasks.sort((a, b) {
+      // First sort by completion status (incomplete first)
+      if (a.isCompleted != b.isCompleted) {
+        return a.isCompleted ? 1 : -1;
+      }
+      // Then sort by creation time (newest first within same completion status)
+      return b.createdAt.compareTo(a.createdAt);
+    });
+    
+    return filteredTasks;
+  }
   List<Task> get allTasks => _tasks;
   Weekday get selectedWeekday => _selectedWeekday;
+  int get weekOffset => _weekOffset;
   bool get isLoading => _isLoading;
+
+  // Week navigation getters
+  bool get isCurrentWeek => _weekOffset == 0;
+  bool get isPreviousWeek => _weekOffset < 0;
+  bool get isNextWeek => _weekOffset > 0;
+  
+  // Get the actual date for the selected weekday in the current week context
+  DateTime get currentWeekStart => DateUtils.getCurrentMonday().add(Duration(days: _weekOffset * 7));
+  DateTime get selectedDate => currentWeekStart.add(Duration(days: _selectedWeekday.dayNumber - 1));
+  
+  // Week display helper
+  String get weekDisplayText {
+    if (_weekOffset == 0) {
+      return 'This Week';
+    } else if (_weekOffset == -1) {
+      return 'Last Week';
+    } else if (_weekOffset == 1) {
+      return 'Next Week';
+    } else if (_weekOffset < 0) {
+      return '${_weekOffset.abs()} weeks ago';
+    } else {
+      return 'In $_weekOffset weeks';
+    }
+  }
 
   List<Task> get completedTasks => tasks.where((task) => task.isCompleted).toList();
   List<Task> get incompleteTasks => tasks.where((task) => !task.isCompleted).toList();
@@ -27,8 +68,27 @@ class TaskProvider extends ChangeNotifier {
   }
 
   bool _isTaskForSelectedWeekday(Task task) {
-    final taskWeekday = Weekday.fromDateTime(task.date);
-    return taskWeekday == _selectedWeekday;
+    final taskDate = DateUtils.startOfDay(task.date);
+    final expectedDate = DateUtils.startOfDay(selectedDate);
+    return taskDate.isAtSameMomentAs(expectedDate);
+  }
+
+  // Week navigation methods
+  void goToPreviousWeek() {
+    _weekOffset--;
+    notifyListeners();
+  }
+
+  void goToNextWeek() {
+    _weekOffset++;
+    notifyListeners();
+  }
+
+  void goToCurrentWeek() {
+    _weekOffset = 0;
+    // Also set the selected weekday to today if going to current week
+    _selectedWeekday = Weekday.today;
+    notifyListeners();
   }
 
   Future<void> _loadTasks() async {
@@ -49,7 +109,7 @@ class TaskProvider extends ChangeNotifier {
     if (title.trim().isEmpty) return;
 
     try {
-      final taskDate = _selectedWeekday.toDateTime();
+      final taskDate = selectedDate;
       final savedTask = await TaskService.createTask(
         title: title.trim(),
         date: taskDate,
@@ -65,7 +125,7 @@ class TaskProvider extends ChangeNotifier {
     if (title.trim().isEmpty) return;
 
     try {
-      final taskDate = weekday.toDateTime();
+      final taskDate = currentWeekStart.add(Duration(days: weekday.dayNumber - 1));
       final savedTask = await TaskService.createTask(
         title: title.trim(),
         date: taskDate,
@@ -158,9 +218,26 @@ class TaskProvider extends ChangeNotifier {
     await _loadTasks();
   }
 
-  // Get tasks for a specific weekday
+  // Get tasks for a specific weekday in the current week context
   List<Task> getTasksForWeekday(Weekday weekday) {
-    return _tasks.where((task) => Weekday.fromDateTime(task.date) == weekday).toList();
+    final weekdayDate = currentWeekStart.add(Duration(days: weekday.dayNumber - 1));
+    final filteredTasks = _tasks.where((task) {
+      final taskDate = DateUtils.startOfDay(task.date);
+      final expectedDate = DateUtils.startOfDay(weekdayDate);
+      return taskDate.isAtSameMomentAs(expectedDate);
+    }).toList();
+    
+    // Sort tasks: incomplete tasks first, then completed tasks
+    filteredTasks.sort((a, b) {
+      // First sort by completion status (incomplete first)
+      if (a.isCompleted != b.isCompleted) {
+        return a.isCompleted ? 1 : -1;
+      }
+      // Then sort by creation time (newest first within same completion status)
+      return b.createdAt.compareTo(a.createdAt);
+    });
+    
+    return filteredTasks;
   }
 
   // Clear completed tasks for current weekday

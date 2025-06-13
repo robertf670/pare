@@ -162,4 +162,68 @@ class DateUtils {
       }
     }
   }
+
+  /// Get Monday for any given week offset (0 = current week, -1 = last week, +1 = next week)
+  static DateTime getMondayForWeekOffset(int weekOffset) {
+    final currentMonday = getCurrentMonday();
+    return currentMonday.add(Duration(days: weekOffset * 7));
+  }
+
+  /// Get Friday for any given week offset
+  static DateTime getFridayForWeekOffset(int weekOffset) {
+    final monday = getMondayForWeekOffset(weekOffset);
+    return monday.add(const Duration(days: 4));
+  }
+
+  /// Get all weekdays for a specific week offset
+  static List<DateTime> getWeekDaysForOffset(int weekOffset) {
+    final monday = getMondayForWeekOffset(weekOffset);
+    return List.generate(5, (index) => monday.add(Duration(days: index)));
+  }
+
+  /// Calculate week offset between two dates
+  static int getWeekOffset(DateTime fromDate, DateTime toDate) {
+    final fromMonday = getMondayForDate(fromDate);
+    final toMonday = getMondayForDate(toDate);
+    final difference = toMonday.difference(fromMonday);
+    return (difference.inDays / 7).round();
+  }
+
+  /// Get Monday for any specific date
+  static DateTime getMondayForDate(DateTime date) {
+    final daysFromMonday = date.weekday - 1;
+    return startOfDay(date.subtract(Duration(days: daysFromMonday)));
+  }
+
+  /// Check if a date is in the current week
+  static bool isInCurrentWeek(DateTime date) {
+    final currentMonday = getCurrentMonday();
+    final currentFriday = getCurrentFriday();
+    final checkDate = startOfDay(date);
+    
+    return !checkDate.isBefore(currentMonday) && !checkDate.isAfter(currentFriday);
+  }
+
+  /// Get week number within the year (ISO 8601)
+  static int getWeekNumber(DateTime date) {
+    final startOfYear = DateTime(date.year, 1, 1);
+    final firstMondayOffset = (startOfYear.weekday - 1) % 7;
+    final firstMonday = startOfYear.subtract(Duration(days: firstMondayOffset));
+    
+    final difference = date.difference(firstMonday);
+    return (difference.inDays / 7).floor() + 1;
+  }
+
+  /// Format week range display (e.g., "Dec 23 - Dec 29")
+  static String formatWeekRange(DateTime mondayDate) {
+    final friday = mondayDate.add(const Duration(days: 4));
+    
+    if (mondayDate.month == friday.month) {
+      // Same month: "Dec 23 - 29"
+      return '${formatShortDate(mondayDate)} - ${friday.day}';
+    } else {
+      // Different months: "Dec 30 - Jan 3"
+      return '${formatShortDate(mondayDate)} - ${formatShortDate(friday)}';
+    }
+  }
 } 

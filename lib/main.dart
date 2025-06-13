@@ -23,9 +23,9 @@ class PareApp extends StatelessWidget {
       create: (context) => TaskProvider(),
       child: MaterialApp(
         title: 'Pare',
-        theme: AppTheme.darkTheme,
+        theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.dark,
+        themeMode: ThemeMode.light,
         home: const HomeScreen(),
         debugShowCheckedModeBanner: false,
       ),
