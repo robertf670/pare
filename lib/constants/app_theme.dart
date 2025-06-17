@@ -18,7 +18,6 @@ class AppTheme {
   static const Color _textPrimary = Color(0xFFFFFFFF);      // Pure white - main text
   static const Color _textSecondary = Color(0xFFE5E5E7);    // Light grey - secondary
   static const Color _textTertiary = Color(0xFF8E8E93);     // Medium grey - tertiary
-  static const Color _textQuaternary = Color(0xFF636366);   // Muted grey - placeholders
   
   /// Accent colors with modern vibrancy
   static const Color _primaryBlue = Color(0xFF007AFF);      // iOS Blue - interactive

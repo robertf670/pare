@@ -4,9 +4,10 @@ import 'dart:async';
 import '../models/weekday.dart';
 import '../providers/task_provider.dart';
 import '../widgets/task_item.dart';
-import '../utils/date_utils.dart' as AppDateUtils;
+import '../widgets/error_handler.dart';
 
 import '../constants/app_theme.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -105,37 +106,52 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB), // Modern light background
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF9FAFB), // Light top
-              Color(0xFFF3F4F6), // Slightly darker bottom
-            ],
+      body: ErrorHandler(
+        showRetryButton: true,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFFF9FAFB), // Light top
+                Color(0xFFF3F4F6), // Slightly darker bottom
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Consumer<TaskProvider>(
-            builder: (context, taskProvider, child) {
-              return GestureDetector(
-                // Add horizontal swipe gestures for week navigation
-                onHorizontalDragEnd: (details) {
-                  // Detect swipe direction based on velocity
-                  if (details.primaryVelocity != null) {
-                    if (details.primaryVelocity! > 500) {
-                      // Swipe right - go to previous week
-                      taskProvider.goToPreviousWeek();
-                    } else if (details.primaryVelocity! < -500) {
-                      // Swipe left - go to next week
-                      taskProvider.goToNextWeek();
-                    }
-                  }
-                },
-                child: _buildScrollableDayList(context, taskProvider),
-              );
-            },
+          child: SafeArea(
+            child: Consumer<TaskProvider>(
+              builder: (context, taskProvider, child) {
+                // Show error state if there's a loading error
+                if (taskProvider.hasError && taskProvider.lastError?.type == ErrorType.loading) {
+                  return ErrorStateWidget(
+                    errorMessage: taskProvider.errorMessage,
+                    onRetry: () => taskProvider.refreshTasks(),
+                  );
+                }
+
+                return LoadingOverlay(
+                  isLoading: taskProvider.isLoading,
+                  loadingText: 'Loading tasks...',
+                  child: GestureDetector(
+                    // Add horizontal swipe gestures for week navigation
+                    onHorizontalDragEnd: (details) {
+                      // Detect swipe direction based on velocity
+                      if (details.primaryVelocity != null) {
+                        if (details.primaryVelocity! > 500) {
+                          // Swipe right - go to previous week
+                          taskProvider.goToPreviousWeek();
+                        } else if (details.primaryVelocity! < -500) {
+                          // Swipe left - go to next week
+                          taskProvider.goToNextWeek();
+                        }
+                      }
+                    },
+                    child: _buildScrollableDayList(context, taskProvider),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -164,7 +180,6 @@ class _HomeScreenState extends State<HomeScreen> {
         weekdayDate.year == today.year && 
         weekdayDate.month == today.month && 
         weekdayDate.day == today.day;
-    final screenHeight = MediaQuery.of(context).size.height;
     
     return GestureDetector(
       onTap: () {
@@ -182,33 +197,32 @@ class _HomeScreenState extends State<HomeScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        // Modern responsive sizing
-        height: isActive ? screenHeight * 0.65 : 96, // 65% for expanded, 96px for collapsed
+        height: isActive ? null : 96,
+        // Remove all height constraints - let content size naturally
         decoration: BoxDecoration(
-          // Seamless gradient design
           gradient: isActive 
             ? const LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFFFAFBFC), // Very subtle top
-                  Color(0xFFF8F9FA), // Seamless bottom
+                  Color(0xFFFAFBFC),
+                  Color(0xFFF8F9FA),
                 ],
               )
             : null,
-          color: isActive ? null : Colors.transparent, // No background for collapsed
+          color: isActive ? null : Colors.transparent,
         ),
         padding: EdgeInsets.symmetric(
-          horizontal: 24, // Consistent padding
-          vertical: isActive ? 24 : 0, // Only padding for expanded
+          horizontal: 20,
+          vertical: isActive ? 20 : 0, // More breathing room
         ),
-        child: isActive ? _buildExpandedDayContent(context, weekday, isToday, tasks, taskProvider) 
+        child: isActive ? _buildExpandedDayContent(context, weekday, isToday, tasks, taskProvider, isActive) 
                        : _buildCollapsedDayContent(context, weekday),
       ),
     );
   }
 
-  Widget _buildExpandedDayContent(BuildContext context, Weekday weekday, bool isToday, List<dynamic> tasks, TaskProvider taskProvider) {
+  Widget _buildExpandedDayContent(BuildContext context, Weekday weekday, bool isToday, List<dynamic> tasks, TaskProvider taskProvider, bool isActive) {
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
@@ -224,8 +238,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: ClipRect(
                   child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12), // Better padding
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Week navigation header with modern glass styling
@@ -241,149 +256,250 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
               
-              // Time and date display side by side
+              // Time and date section with enhanced spacing
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Time display
-                    Text(
-                      '${_currentTime.hour.toString().padLeft(2, '0')}:${_currentTime.minute.toString().padLeft(2, '0')}',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontSize: 56,
-                        fontWeight: FontWeight.w100,
-                        color: const Color(0xFF1A1A1A),
-                        letterSpacing: -3.0,
-                        height: 0.85,
-                      ),
-                    ),
-                    
-                    const SizedBox(width: 16),
-                    
-                    // Enhanced date display
-                    Expanded(
+                    // Time display with subtle background
+                    Semantics(
+                      label: 'Current time',
+                      readOnly: true,
                       child: Container(
-                        margin: const EdgeInsets.only(bottom: 4), // Align with baseline
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0x06000000),
-                          borderRadius: BorderRadius.circular(20),
+                          color: const Color(0x03000000),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0x08000000),
+                            color: const Color(0x05000000),
                             width: 1,
                           ),
                         ),
                         child: Text(
-                          _formatDateLong(weekday, taskProvider.selectedDate),
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF6B7280),
-                            letterSpacing: 0.3,
+                          DateFormat('HH:mm').format(_currentTime),
+                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1A1A1A),
+                            letterSpacing: -1.5,
+                            height: 1.0,
                           ),
                         ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 12),
+                    
+                    // Enhanced date display with better visual hierarchy
+                    Semantics(
+                      label: 'Current date: ${_formatDateForAccessibility(weekday, taskProvider.selectedDate)}',
+                      readOnly: true,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 3,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 4), // Align with baseline
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0x06000000),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(0x08000000),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                _formatDateLong(weekday, taskProvider.selectedDate),
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF6B7280),
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
               
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               
-              // Modern tasks section
-              Expanded(
+              // Modern tasks section with better proportions
+              Flexible(
+                flex: 1,
                 child: Container(
-                  decoration: AppTheme.modernCardDecoration(
-                    backgroundColor: const Color(0xFFFDFDFD),
-                    borderColor: const Color(0xFFE8E9EA),
-                    borderRadius: AppTheme.radiusL,
-                    elevated: true,
+                  constraints: BoxConstraints(
+                    minHeight: 200,
+                    maxHeight: MediaQuery.of(context).size.height * 0.6,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Tasks header with scroll hint
-                        if (tasks.isNotEmpty) ...[
-                          Row(
+                decoration: AppTheme.modernCardDecoration(
+                  backgroundColor: const Color(0xFFFDFDFD),
+                  borderColor: const Color(0xFFE8E9EA),
+                  borderRadius: AppTheme.radiusL,
+                  elevated: true,
+                ),
+                                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Modern header design with better weekday indicator
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F9FA),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: const Color(0xFFE5E7EA),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Semantics(
+                          label: 'Day ${weekday.fullName}${isToday ? ', today' : ''}. ${tasks.length} tasks. ${isActive ? 'Currently selected' : 'Tap to select'}',
+                          hint: isActive ? 'Swipe left or right to navigate between weeks' : 'Tap to view tasks for this day',
+                          button: !isActive,
+                          selected: isActive,
+                          child: Row(
                             children: [
+                              // Day indicator with modern styling
                               Container(
-                                width: 4,
-                                height: 16,
+                                width: 48,
+                                height: 48,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF1A1A1A),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Today\'s Tasks',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1A1A1A),
-                                ),
-                              ),
-                              // Scroll hint for many tasks
-                              if (tasks.length > 3) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF6B7280).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                                  color: isToday 
+                                      ? const Color(0xFF1A1A1A)
+                                      : isActive 
+                                        ? const Color(0xFF1A1A1A).withValues(alpha: 0.1)
+                                        : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isToday || isActive 
+                                        ? const Color(0xFF1A1A1A)
+                                        : const Color(0xFFE5E7EA),
+                                    width: 2,
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.keyboard_arrow_up,
-                                        size: 12,
-                                        color: const Color(0xFF6B7280),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    weekday.shortName,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: isToday 
+                                          ? const Color(0xFFFFFFFF)
+                                          : const Color(0xFF1A1A1A),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              
+                              const SizedBox(width: 16),
+                              
+                              // Day name and task count
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          weekday.fullName,
+                                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF1A1A1A),
+                                          ),
+                                        ),
+                                        if (isToday) ...[
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF10B981),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: const Text(
+                                              'TODAY',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFFFFFFFF),
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Semantics(
+                                      label: '${tasks.length} ${tasks.length == 1 ? 'task' : 'tasks'}${tasks.isNotEmpty ? '. ${tasks.where((t) => t.isCompleted).length} completed' : ''}',
+                                      child: Text(
+                                        tasks.isEmpty 
+                                            ? 'No tasks planned'
+                                            : '${tasks.length} ${tasks.length == 1 ? 'task' : 'tasks'} • ${tasks.where((t) => t.isCompleted).length} completed',
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: const Color(0xFF6B7280),
+                                          fontSize: 13,
+                                        ),
                                       ),
-                                      Icon(
-                                        Icons.keyboard_arrow_down,
-                                        size: 12,
-                                        color: const Color(0xFF6B7280),
-                                      ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              
+                              // Visual indicator for active/today
+                              if (isActive || isToday) ...[
+                                Container(
+                                  width: 4,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: isToday 
+                                        ? const Color(0xFF10B981)
+                                        : const Color(0xFF1A1A1A),
+                                    borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
                               ],
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1A1A1A),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '${tasks.length}',
-                                  style: const TextStyle(
-                                    color: Color(0xFFFFFFFF),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
-                          const SizedBox(height: 20),
-                        ],
-                        
-                        // Tasks list with prominent scrollbar
-                        Expanded(
-                          child: tasks.isNotEmpty 
-                            ? _ScrollableTaskList(
-                                tasks: tasks,
-                                taskProvider: taskProvider,
-                                showTaskOptions: _showTaskOptions,
-                              )
-                            : Center(
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Tasks list with prominent scrollbar  
+                      Expanded(
+                        child: tasks.isNotEmpty 
+                          ? _ScrollableTaskList(
+                              tasks: tasks,
+                              taskProvider: taskProvider,
+                              showTaskOptions: _showTaskOptions,
+                            )
+                          : Semantics(
+                              label: 'No tasks for ${weekday.fullName}',
+                              hint: 'Tap the add button below to create your first task',
+                              child: Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -419,12 +535,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Modern add task button
-                        GestureDetector(
+                            ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Modern add task button
+                      Semantics(
+                        label: 'Add new task for ${weekday.fullName}',
+                        hint: 'Opens dialog to create a new task',
+                        button: true,
+                        child: GestureDetector(
                           onTap: () => _showAddTaskDialog(context, taskProvider, weekday),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -468,9 +589,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
                 ),
               ),
             ],
@@ -628,16 +750,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _formatDateSimple(DateTime date) {
+  String _formatDateLong(Weekday weekday, DateTime date) {
     final months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
     
-    return '${months[date.month - 1]} ${date.day}';
+    return '${weekday.fullName}, ${date.day} ${months[date.month - 1]}';
   }
 
-  String _formatDateLong(Weekday weekday, DateTime date) {
+  String _formatDateForAccessibility(Weekday weekday, DateTime date) {
     final months = [
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
@@ -846,8 +968,8 @@ class _ScrollableTaskListState extends State<_ScrollableTaskList> {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.only(
-          top: 8,
-          bottom: 8,
+          top: 12,
+          bottom: 12,
           right: 16, // Add padding for scrollbar
         ),
         itemCount: widget.tasks.length,
@@ -864,7 +986,10 @@ class _ScrollableTaskListState extends State<_ScrollableTaskList> {
             child: TaskItem(
               task: task,
               onLongPress: () => widget.showTaskOptions(context, task, widget.taskProvider),
-              onDeleted: () {},
+              onDeleted: () {
+                // Force rebuild to remove the dismissed task from the list
+                setState(() {});
+              },
             ),
           );
         },

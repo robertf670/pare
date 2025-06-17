@@ -9,15 +9,19 @@ class TaskService {
 
   /// Initialize Hive and open the tasks box
   static Future<void> initialize() async {
-    await Hive.initFlutter();
-    
-    // Register adapters
-    if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter(TaskAdapter());
+    try {
+      await Hive.initFlutter();
+      
+      // Register adapters
+      if (!Hive.isAdapterRegistered(0)) {
+        Hive.registerAdapter(TaskAdapter());
+      }
+      
+      // Open the tasks box
+      _tasksBox = await Hive.openBox<Task>(_tasksBoxName);
+    } catch (e) {
+      throw Exception('Failed to initialize storage: ${e.toString()}');
     }
-    
-    // Open the tasks box
-    _tasksBox = await Hive.openBox<Task>(_tasksBoxName);
   }
 
   /// Get the tasks box (ensure it's initialized)
@@ -33,15 +37,23 @@ class TaskService {
     required String title,
     required DateTime date,
   }) async {
-    final task = Task(
-      id: _generateId(),
-      title: title.trim(),
-      date: date,
-      createdAt: DateTime.now(),
-    );
-    
-    await _box.put(task.id, task);
-    return task;
+    try {
+      if (title.trim().isEmpty) {
+        throw ArgumentError('Task title cannot be empty');
+      }
+
+      final task = Task(
+        id: _generateId(),
+        title: title.trim(),
+        date: date,
+        createdAt: DateTime.now(),
+      );
+      
+      await _box.put(task.id, task);
+      return task;
+    } catch (e) {
+      throw Exception('Failed to create task: ${e.toString()}');
+    }
   }
 
   /// Get all tasks

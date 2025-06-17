@@ -4,6 +4,31 @@ import '../models/weekday.dart';
 import '../services/task_service.dart';
 import '../utils/date_utils.dart';
 
+// Add error state management
+enum ErrorType {
+  loading,
+  adding,
+  updating,
+  deleting,
+  general,
+}
+
+class AppError {
+  final String message;
+  final ErrorType type;
+  final DateTime timestamp;
+  final Object? originalError;
+
+  AppError({
+    required this.message,
+    required this.type,
+    DateTime? timestamp,
+    this.originalError,
+  }) : timestamp = timestamp ?? DateTime.now();
+
+  @override
+  String toString() => 'AppError: $message (${type.name})';
+}
 
 class TaskProvider extends ChangeNotifier {
   List<Task> _tasks = [];
@@ -11,6 +36,43 @@ class TaskProvider extends ChangeNotifier {
   int _weekOffset = 0; // 0 = current week, -1 = previous week, +1 = next week
   bool _isLoading = false;
   final List<Task> _deletedTasks = []; // Store recently deleted tasks for undo
+  
+  // Add error handling state
+  AppError? _lastError;
+  final Map<String, bool> _operationStates = {}; // Track individual operation states
+
+  // Add error getters
+  AppError? get lastError => _lastError;
+  bool get hasError => _lastError != null;
+  String get errorMessage => _lastError?.message ?? '';
+  
+  // Check if specific operations are in progress
+  bool isOperationInProgress(String operation) => _operationStates[operation] ?? false;
+  bool get isAddingTask => isOperationInProgress('adding');
+  bool get isDeletingTask => isOperationInProgress('deleting');
+  bool get isUpdatingTask => isOperationInProgress('updating');
+
+  // Clear error state
+  void clearError() {
+    _lastError = null;
+    notifyListeners();
+  }
+
+  // Set error state
+  void _setError(String message, ErrorType type, [Object? originalError]) {
+    _lastError = AppError(
+      message: message,
+      type: type,
+      originalError: originalError,
+    );
+    notifyListeners();
+  }
+
+  // Set operation state
+  void _setOperationState(String operation, bool inProgress) {
+    _operationStates[operation] = inProgress;
+    notifyListeners();
+  }
 
   List<Task> get tasks {
     final filteredTasks = _tasks.where((task) => _isTaskForSelectedWeekday(task)).toList();
@@ -28,6 +90,7 @@ class TaskProvider extends ChangeNotifier {
     return filteredTasks;
   }
   List<Task> get allTasks => _tasks;
+  List<Task> get deletedTasks => _deletedTasks;
   Weekday get selectedWeekday => _selectedWeekday;
   int get weekOffset => _weekOffset;
   bool get isLoading => _isLoading;
@@ -93,12 +156,14 @@ class TaskProvider extends ChangeNotifier {
 
   Future<void> _loadTasks() async {
     _isLoading = true;
+    clearError(); // Clear any previous errors
     notifyListeners();
 
     try {
       _tasks = TaskService.getAllTasks();
     } catch (e) {
       debugPrint('Error loading tasks: $e');
+      _setError('Failed to load tasks. Please try again.', ErrorType.loading, e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -106,7 +171,13 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> addTask(String title) async {
-    if (title.trim().isEmpty) return;
+    if (title.trim().isEmpty) {
+      _setError('Task title cannot be empty', ErrorType.adding);
+      return;
+    }
+
+    _setOperationState('adding', true);
+    clearError();
 
     try {
       final taskDate = selectedDate;
@@ -118,6 +189,9 @@ class TaskProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding task: $e');
+      _setError('Failed to add task. Please try again.', ErrorType.adding, e);
+    } finally {
+      _setOperationState('adding', false);
     }
   }
 
@@ -138,15 +212,23 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<void> toggleTaskCompletion(String taskId) async {
+    _setOperationState('updating', true);
+    clearError();
+    
     try {
       final updatedTask = await TaskService.toggleTaskCompletion(taskId);
       final taskIndex = _tasks.indexWhere((task) => task.id == taskId);
       if (taskIndex != -1) {
         _tasks[taskIndex] = updatedTask;
         notifyListeners();
+      } else {
+        _setError('Task not found', ErrorType.updating);
       }
     } catch (e) {
       debugPrint('Error updating task: $e');
+      _setError('Failed to update task. Please try again.', ErrorType.updating, e);
+    } finally {
+      _setOperationState('updating', false);
     }
   }
 
@@ -166,9 +248,14 @@ class TaskProvider extends ChangeNotifier {
   Future<void> deleteTask(String taskId) async {
     // Find and store the task before deleting for potential undo
     final taskIndex = _tasks.indexWhere((task) => task.id == taskId);
-    if (taskIndex == -1) return;
+    if (taskIndex == -1) {
+      _setError('Task not found', ErrorType.deleting);
+      return;
+    }
     
     final taskToDelete = _tasks[taskIndex];
+    _setOperationState('deleting', true);
+    clearError();
     
     try {
       await TaskService.deleteTask(taskId);
@@ -183,6 +270,9 @@ class TaskProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error deleting task: $e');
+      _setError('Failed to delete task. Please try again.', ErrorType.deleting, e);
+    } finally {
+      _setOperationState('deleting', false);
     }
   }
 

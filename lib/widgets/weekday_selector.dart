@@ -24,52 +24,53 @@ class WeekdaySelector extends StatelessWidget {
               final completedCount = taskProvider.getTasksForWeekday(weekday)
                   .where((task) => task.isCompleted).length;
 
-              return Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: GestureDetector(
-                  onTap: () => taskProvider.setSelectedWeekday(weekday),
+              return GestureDetector(
+                onTap: () => taskProvider.setSelectedWeekday(weekday),
+                child: Semantics(
+                  label: '${weekday.fullName}${isToday ? ', today' : ''}. $taskCount ${taskCount == 1 ? 'task' : 'tasks'}${taskCount > 0 ? ', $completedCount completed' : ''}',
+                  hint: isSelected ? 'Currently selected day' : 'Tap to select this day',
+                  button: true,
+                  selected: isSelected,
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : isToday
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : Theme.of(context).colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(16),
-                                             border: Border.all(
-                         color: isToday
-                           ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                           : Colors.transparent,
-                         width: 1,
-                       ),
+                          ? Theme.of(context).colorScheme.primary
+                          : isToday
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                            : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected || isToday
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.transparent,
+                        width: 1.5,
+                      ),
                     ),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Day abbreviation
                         Text(
                           weekday.shortName,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             color: isSelected
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : isToday
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.onSurface,
-                            fontWeight: isSelected || isToday 
-                              ? FontWeight.w600 
-                              : FontWeight.w400,
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : isToday
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.onSurface,
+                            fontWeight: isSelected || isToday ? FontWeight.w600 : FontWeight.w500,
+                            fontSize: 12,
                           ),
                         ),
-                        
-                        // Task indicator
                         if (taskCount > 0) ...[
                           const SizedBox(height: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                                                             color: completedCount == taskCount
+                              color: completedCount == taskCount
                                  ? Theme.of(context).colorScheme.secondary
                                  : isSelected
                                    ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8)
@@ -88,18 +89,6 @@ class WeekdaySelector extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ),
-                        ] else if (isToday || isSelected) ...[
-                          const SizedBox(height: 4),
-                          Container(
-                            width: 6,
-                            height: 6,
-                                                         decoration: BoxDecoration(
-                               color: isSelected
-                                 ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.6)
-                                 : Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
-                               shape: BoxShape.circle,
-                             ),
                           ),
                         ],
                       ],
