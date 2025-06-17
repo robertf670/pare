@@ -5,9 +5,10 @@ import '../models/weekday.dart';
 import '../providers/task_provider.dart';
 import '../widgets/task_item.dart';
 import '../widgets/error_handler.dart';
-
 import '../constants/app_theme.dart';
 import 'package:intl/intl.dart';
+import 'settings_screen.dart';
+import 'whats_new_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -468,8 +469,142 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               
+                              // Three-dot menu for all days
+                              if (isActive) ...[
+                                const SizedBox(width: 8),
+                                Semantics(
+                                  label: 'More options',
+                                  hint: 'Opens menu with additional options',
+                                  button: true,
+                                  child: PopupMenuButton<String>(
+                                    icon: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF8F9FA),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: const Color(0xFFE5E7EA),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.more_vert,
+                                        size: 18,
+                                        color: Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                    elevation: 8,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    color: const Color(0xFFFFFFFF),
+                                    surfaceTintColor: Colors.transparent,
+                                    onSelected: (value) => _handleMenuAction(value, context, taskProvider),
+                                    itemBuilder: (context) => [
+                                      // Clear completed tasks (only show if there are completed tasks)
+                                      if (tasks.any((task) => task.isCompleted)) ...[
+                                        PopupMenuItem<String>(
+                                          value: 'clear_completed',
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 24,
+                                                height: 24,
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFFF3B30).withValues(alpha: 0.1),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                ),
+                                                child: const Icon(
+                                                  Icons.clear_all,
+                                                  size: 14,
+                                                  color: Color(0xFFFF3B30),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              const Text(
+                                                'Clear completed tasks',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Color(0xFF1A1A1A),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const PopupMenuDivider(),
+                                      ],
+                                      
+                                      // Settings
+                                      PopupMenuItem<String>(
+                                        value: 'settings',
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 24,
+                                              height: 24,
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF6B7280).withValues(alpha: 0.1),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: const Icon(
+                                                Icons.settings,
+                                                size: 14,
+                                                color: Color(0xFF6B7280),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            const Text(
+                                              'Settings',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF1A1A1A),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                      // What's New (placeholder for now)
+                                      PopupMenuItem<String>(
+                                        value: 'whats_new',
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 24,
+                                              height: 24,
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF007AFF).withValues(alpha: 0.1),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: const Icon(
+                                                Icons.new_releases,
+                                                size: 14,
+                                                color: Color(0xFF007AFF),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            const Text(
+                                              'What\'s New',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF1A1A1A),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              
                               // Visual indicator for active/today
                               if (isActive || isToday) ...[
+                                const SizedBox(width: 8),
                                 Container(
                                   width: 4,
                                   height: 32,
@@ -899,6 +1034,150 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void _handleMenuAction(String value, BuildContext context, TaskProvider taskProvider) async {
+    switch (value) {
+      case 'clear_completed':
+        await _showClearCompletedConfirmation(context, taskProvider);
+        break;
+      case 'settings':
+        if (mounted) {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const SettingsScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOutCubic;
+
+                var tween = Tween(begin: begin, end: end).chain(
+                  CurveTween(curve: curve),
+                );
+
+                return SlideTransition(
+                  position: animation.drive(tween),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          );
+        }
+        break;
+      case 'whats_new':
+        if (mounted) {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const WhatsNewScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOutCubic;
+
+                var tween = Tween(begin: begin, end: end).chain(
+                  CurveTween(curve: curve),
+                );
+
+                return SlideTransition(
+                  position: animation.drive(tween),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          );
+        }
+        break;
+    }
+  }
+
+  Future<void> _showClearCompletedConfirmation(BuildContext context, TaskProvider taskProvider) async {
+    final completedCount = taskProvider.tasks.where((task) => 
+      task.isCompleted && _isSameDay(task.date, taskProvider.selectedDate)
+    ).length;
+
+    if (completedCount == 0) return;
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFFFFFF),
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 8,
+          title: const Text(
+            'Clear Completed Tasks',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to remove $completedCount completed ${completedCount == 1 ? 'task' : 'tasks'} from today? This action cannot be undone.',
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xFF6B7280),
+              height: 1.4,
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF6B7280),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                taskProvider.clearCompletedTasks();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF3B30),
+                foregroundColor: const Color(0xFFFFFFFF),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Clear Tasks',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+           date1.month == date2.month &&
+           date1.day == date2.day;
   }
 }
 
